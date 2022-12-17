@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Workflow
 ========
@@ -8,12 +9,13 @@ Workflow
 - ocrmypdf | OCR                         | PDF → PDF
 """
 
-from PIL import Image
-import numpy as np
-from subprocess import run
 from pathlib import Path
+from subprocess import run
 from tempfile import TemporaryDirectory
-from shutil import copyfile
+
+import click
+import numpy as np
+from PIL import Image
 
 
 def check_empty_outputdir(func):
@@ -53,15 +55,15 @@ def convert(input_file: Path, output_file: Path) -> Path:
     return output_file
 
 
-def unpaper(input_file: Path, output_file_pattern: Path) -> Path:
+def unpaper(input_file: Path, output_file_pattern: Path, double_page: bool) -> Path:
     """
     Separates two-page scans into single pages (and more).
     """
     assert input_file.suffix == '.ppm'
+    # use a pattern even if we only have one output file
     assert '%d' in output_file_pattern.name
 
     args = [
-        '--layout', 'double',
         '--no-blackfilter',
         '--no-blurfilter',
         '--no-border-align',
@@ -73,9 +75,13 @@ def unpaper(input_file: Path, output_file_pattern: Path) -> Path:
         '--no-mask-scan',
         '--no-noisefilter',
         '--no-wipe',
-        '--output-pages', '2',
         # '--overwrite',
     ]
+    if double_page:
+        args += [
+            '--layout', 'double',
+            '--output-pages', '2',
+        ]
 
     run(['unpaper', *args, input_file, output_file_pattern], check=True)
 
@@ -121,10 +127,11 @@ def is_blank(page_path: Path) -> bool:
     return mean_blackness < 1  # TODO: adjust threshold
 
 
-def main():
-    input_file = Path('input.pdf')
-    output_file = Path('output.pdf')
-
+@click.command()
+@click.argument('input_file', type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.argument('output_file', type=click.Path(dir_okay=False, path_type=Path))
+@click.option('double_page', '--double-page/--single-page', default=True)
+def main(input_file, output_file, double_page):
     assert input_file.suffix == '.pdf'
     assert output_file.suffix == '.pdf'
     assert output_file.parent.exists()
@@ -144,9 +151,9 @@ def main():
         ]
 
         pages = [
-            single_page
-            for double_page in pages
-            for single_page in unpaper(double_page, tmpdir / f"3-{double_page.stem}-%d.ppm")
+            out_page
+            for in_page in pages
+            for out_page in unpaper(in_page, tmpdir / f"3-{in_page.stem}-%d.ppm", double_page)
         ]
 
         pages = [
