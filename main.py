@@ -116,8 +116,9 @@ def is_blank(page_path: Path) -> bool:
     image = np.mean(image, axis=2)
     # average over all pixels
     mean = np.mean(image)
-    print(page_path, mean)
-    return mean < 0.01  # TODO: adjust threshold
+    mean_blackness = 255 - mean
+    print(page_path, mean_blackness)
+    return mean_blackness < 1  # TODO: adjust threshold
 
 
 def main():
@@ -135,23 +136,25 @@ def main():
         tmpdir = Path(tmpdir)
         print(tmpdir)
 
-        # tmpdir.mkdir(777, False, '1')
         pages = pdftoppm(input_file, tmpdir / f"1-{input_file.stem}")
 
-        # tmpdir.mkdir(777, False, '2')
         pages = [
             convert(page, tmpdir / f"2-{page.name}")
             for page in pages
         ]
 
-        # tmpdir.mkdir(777, False, '3')
         pages = [
             single_page
             for double_page in pages
             for single_page in unpaper(double_page, tmpdir / f"3-{double_page.stem}-%d.ppm")
         ]
 
-        # tmpdir.mkdir(777, False, '4')
+        pages = [
+            page
+            for page in pages
+            if not is_blank(page)
+        ]
+
         pdf = img2pdf(pages, tmpdir / f"4-{input_file.name}")
 
         ocrmypdf(pdf, output_file)
