@@ -39,6 +39,9 @@ def pdftoppm(input_file: Path, output_file_base: Path) -> list[Path]:
 
 
 def convert(input_file: Path, output_file: Path) -> Path:
+    """
+    Applies a curve filter to the image using ImageMagick.
+    """
     assert input_file.suffix == '.ppm'
     assert output_file.suffix == '.ppm'
 
@@ -55,7 +58,7 @@ def convert(input_file: Path, output_file: Path) -> Path:
     return output_file
 
 
-def unpaper(input_file: Path, output_file_pattern: Path, double_page: bool) -> Path:
+def unpaper(input_file: Path, output_file_pattern: Path, double_page: bool) -> list[Path]:
     """
     Separates two-page scans into single pages (and more).
     """
@@ -137,7 +140,7 @@ def main(input_file, output_file, double_page):
     assert output_file.parent.exists()
 
     # TODO: option to overwrite
-    # assert not output_file.exists(), "Output file already exists"
+    assert not output_file.exists(), "Output file already exists"
 
     with TemporaryDirectory() as tmpdir:
         tmpdir = Path(tmpdir)
