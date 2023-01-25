@@ -1,5 +1,5 @@
 # Mitteilungen-Scans-Processing
-Dies ist ein kleines Tool, um die Scans der [Mitteilungen des Vereins für Geschichte und Heimatpflege Soest e. V.](https://geschichtsverein-soest.de/mitteilungen/) zu ansehnlichen PDFs zu verarbeiten.
+Dies ist ein kleines Tool, um die Scans der [Mitteilungen des Vereins für Geschichte und Heimatpflege Soest e. V.](https://geschichtsverein-soest.de/mitteilungen/) zu ansehnlichen, durchsuchbaren PDFs zu verarbeiten.
 Ganz bestimmt gibt es bessere Wege – beispielsweise könnte ich `Pillow` auch verwenden, um `convert` zu ersetzen – aber so ist das Projekt eben gewachsen und [gut genug](https://www.xkcd.com/974/).
 
 
